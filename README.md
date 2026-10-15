@@ -1,6 +1,6 @@
 # Pairs Trading Strategy on Cointegrated ETFs
 
-Iimplementation of a cointegration based pairs trading strategy, inspired by the methodology of Chen and Alexiou (2025). The strategy trades the pair SPY and IVV, two ETFs that track the S&P 500 index, exploiting short term deviations of their price relationship from its historical mean.
+Implementation of a cointegration based pairs trading strategy, inspired by the methodology of Chen and Alexiou (2025). The strategy trades the pair SPY and IVV, two ETFs that track the S&P 500 index, exploiting short term deviations of their price relationship from its historical mean.
 
 ## Idea
 
@@ -12,11 +12,13 @@ The statistical foundation is cointegration: two price series are cointegrated i
 
 The pipeline follows the framework described in Chen and Alexiou (2025):
 
-1. **Data.** Daily closing prices of SPY and IVV downloaded from Yahoo Finance over the period 2021 to 2026.
+1. **Data.** Daily closing prices of SPY and IVV downloaded from Yahoo Finance over the period 2021 to 2026, with `auto_adjust=False`.
 2. **Cointegration test.** The Engle and Granger two step test, through `coint()` from statsmodels, checks whether the residuals of the linear relationship between the two prices are stationary. The null hypothesis is no cointegration, tested at the 5 percent level.
 3. **Spread and z-score.** The spread is computed and standardized with a rolling mean and a rolling standard deviation over a 60 day window, producing a z score that measures how far the spread is from its recent average.
 4. **Signal generation.** Following the thresholds used in the paper and in Avellaneda and Lee (2010): when the z-score rises above 2 the strategy shorts SPY and buys IVV, when it falls below minus 2 the strategy buys SPY and shorts IVV, and positions are closed when the absolute z score falls below 0.5. Positions are held between signals through forward filling.
 5. **Backtest.** The strategy return at day t uses the signal from day t - 1, which avoids look ahead bias. Annualized return and Sharpe ratio are reported.
+
+`coint()` finds the two ETFs cointegrated because prices are downloaded with `auto_adjust=False`. The yfinance default would instead return dividend adjusted closes. Slightly different expense ratios and dividend dates then insert a slow drift in the spread, the residuals stop being stationary, and the test fails. Raw closes are the prices actually traded, so they are the series that the cointegration relationship describes.
 
 ## Simplifications of this first version
 
